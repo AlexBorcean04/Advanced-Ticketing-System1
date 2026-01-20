@@ -1,0 +1,67 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../lib/api.js';
+import { setToken } from '../lib/auth.js';
+
+const AdminLogin = () => {
+  const navigate = useNavigate();
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const { data } = await api.post('/admin/login', { password });
+      setToken(data.token);
+      navigate('/admin');
+    } catch (err) {
+      setError('Invalid password. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto px-6 py-16">
+      <div className="glass-panel rounded-3xl p-8 md:p-12 max-w-lg mx-auto">
+        <div className="space-y-3 mb-8">
+          <p className="text-xs uppercase tracking-[0.3em] text-accent-500/80">Admin Access</p>
+          <h1 className="text-3xl font-semibold">Secure dashboard login</h1>
+          <p className="text-white/60">
+            Enter the admin password to manage events and seat maps.
+          </p>
+        </div>
+
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div className="space-y-2">
+            <label className="text-sm text-white/70" htmlFor="password">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="w-full rounded-2xl bg-white/10 border border-white/20 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent-500"
+              placeholder="Enter admin password"
+              required
+            />
+          </div>
+          {error && <div className="text-sm text-red-300">{error}</div>}
+          <button
+            type="submit"
+            className="w-full rounded-full bg-accent-500 hover:bg-accent-600 py-3 text-sm font-semibold disabled:opacity-60"
+            disabled={loading}
+          >
+            {loading ? 'Signing in...' : 'Login'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default AdminLogin;
