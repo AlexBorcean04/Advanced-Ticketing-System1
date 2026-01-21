@@ -1,13 +1,14 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Ticket, Shield } from 'lucide-react';
+import { Ticket, Shield, User } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
   const navItems = useMemo(
     () => [
-      { label: 'Events', path: '/', icon: Ticket },
-      { label: 'Admin', path: '/admin', icon: Shield },
+      { label: 'Events', path: '/', icon: Ticket, matchPaths: ['/'] },
+      { label: 'Admin', path: '/admin', icon: Shield, matchPaths: ['/admin', '/admin/login'] },
+      { label: 'Account', path: '/login', icon: User, matchPaths: ['/login', '/register'] },
     ],
     []
   );
@@ -15,10 +16,12 @@ const Navbar = () => {
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
   const [activeStyle, setActiveStyle] = useState({ width: 0, left: 0 });
 
+  const isRouteActive = (item) =>
+    item.matchPaths?.some((path) => location.pathname.startsWith(path)) ??
+    location.pathname.startsWith(item.path);
+
   useEffect(() => {
-    const activeItem = navItems.find((item) =>
-      location.pathname.startsWith(item.path)
-    );
+    const activeItem = navItems.find((item) => isRouteActive(item));
     if (!activeItem) {
       return;
     }
@@ -76,13 +79,12 @@ const Navbar = () => {
                   onMouseEnter={() => handleHover(item.path)}
                   onFocus={() => handleHover(item.path)}
                   onBlur={handleHoverEnd}
-                  className={({ isActive }) =>
-                    `relative z-10 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      isActive || location.pathname.startsWith(item.path)
-                        ? 'text-white'
-                        : 'text-white/60 hover:text-white'
-                    }`
-                  }
+                  className={() => {
+                    const isActive = isRouteActive(item);
+                    return `relative z-10 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      isActive ? 'text-white' : 'text-white/60 hover:text-white'
+                    }`;
+                  }}
                 >
                   <Icon size={16} />
                   {item.label}

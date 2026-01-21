@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, LogOut, Plus, ArrowUpRight } from 'lucide-react';
-import api from '../lib/api.js';
+import adminApi from '../lib/adminApi.js';
 import { clearToken } from '../lib/auth.js';
 
 const AdminDashboard = () => {
@@ -13,7 +13,7 @@ const AdminDashboard = () => {
 
   const fetchEvents = async () => {
     try {
-      const { data } = await api.get('/events');
+      const { data } = await adminApi.get('/events');
       setEvents(data);
       setStatus('success');
     } catch (err) {
@@ -29,7 +29,7 @@ const AdminDashboard = () => {
     event.preventDefault();
     setError('');
     try {
-      await api.post('/events', {
+      await adminApi.post('/events', {
         title: form.title,
         date: form.date,
       });
@@ -41,7 +41,7 @@ const AdminDashboard = () => {
   };
 
   const handleDelete = async (id) => {
-    await api.delete(`/events/${id}`);
+    await adminApi.delete(`/events/${id}`);
     fetchEvents();
   };
 

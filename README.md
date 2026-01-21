@@ -16,6 +16,7 @@ PORT=5000
 CLIENT_ORIGIN=http://localhost:5173
 ADMIN_PASSWORD=changeme
 ADMIN_JWT_SECRET=supersecret
+USER_JWT_SECRET=supersecret
 ```
 
 **Frontend**
@@ -76,5 +77,6 @@ This happens when `MONGO_URI` is missing. Ensure `server/.env` exists and includ
 ## Test checklist
 
 - Login at `/admin/login`, then create and delete events in `/admin`.
+- Create a user account at `/register`, then log in and complete checkout for locked seats.
 - Open an event seat map, lock seats, and verify real-time updates in another browser.
 - Checkout to book seats and ensure others see booked states.

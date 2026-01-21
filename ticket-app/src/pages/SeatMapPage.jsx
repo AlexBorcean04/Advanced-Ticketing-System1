@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../lib/api.js';
 import SeatMap from '../components/SeatMap.jsx';
 import CartPanel from '../components/CartPanel.jsx';
 import useSeatStore from '../store/seatStore.js';
 import { getSocket, disconnectSocket } from '../lib/socket.js';
+import { getUserProfile, isUserAuthed } from '../lib/userAuth.js';
 
 const getUserId = () => {
   const key = 'seat_user_id';
@@ -15,6 +16,15 @@ const getUserId = () => {
     : `user-${Math.random().toString(36).slice(2, 10)}`;
   localStorage.setItem(key, newId);
   return newId;
+};
+
+const getSeatHolderId = () => {
+  const profile = getUserProfile();
+  if (profile?.id) {
+    localStorage.setItem('seat_user_id', profile.id);
+    return profile.id;
+  }
+  return getUserId();
 };
 
 const normalizeSeats = (seats) => {
@@ -29,11 +39,13 @@ const normalizeSeats = (seats) => {
 
 const SeatMapPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [status, setStatus] = useState('loading');
   const [timeLeft, setTimeLeft] = useState(0);
-  const userId = useMemo(() => getUserId(), []);
+  const userId = useMemo(() => getSeatHolderId(), []);
   const socket = useMemo(() => getSocket(), []);
+  const canCheckout = isUserAuthed();
 
   const { selectedSeats, setSelectedSeats, holdExpiresAt, setHoldExpiresAt, clearHold } =
     useSeatStore();
@@ -193,6 +205,10 @@ const SeatMapPage = () => {
 
   const handleSeatClick = (seat) => {
     if (!event) return;
+    if (!canCheckout) {
+      navigate('/login');
+      return;
+    }
     if (seat.status === 'booked') return;
 
     const isLockedByUser = seat.status === 'locked' && seat.lockedBy === userId;
@@ -218,9 +234,13 @@ const SeatMapPage = () => {
   };
 
   const handleCheckout = async () => {
+    if (!canCheckout) {
+      navigate('/login');
+      return;
+    }
     if (derivedSelectedSeats.length === 0) return;
     try {
-      await api.post('/checkout', { eventId: id, seatIds: derivedSelectedSeats, userId });
+      await api.post('/checkout', { eventId: id, seatIds: derivedSelectedSeats });
       setSelectedSeats([]);
       clearHold();
     } catch (error) {
@@ -264,6 +284,7 @@ const SeatMapPage = () => {
             onClear={handleClear}
             onCheckout={handleCheckout}
             timeLeft={timeLeft}
+            canCheckout={canCheckout}
           />
         </div>
       </div>
@@ -275,6 +296,7 @@ const SeatMapPage = () => {
           onClear={handleClear}
           onCheckout={handleCheckout}
           timeLeft={timeLeft}
+          canCheckout={canCheckout}
         />
       </div>
     </div>

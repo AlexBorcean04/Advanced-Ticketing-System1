@@ -1,11 +1,13 @@
 import express from 'express';
 import Event from '../models/Event.js';
+import userAuth from '../middleware/userAuth.js';
 
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+router.post('/', userAuth, async (req, res) => {
   try {
-    const { eventId, seatIds, userId } = req.body;
+    const { eventId, seatIds } = req.body;
+    const userId = req.user?.id;
     if (!eventId || !Array.isArray(seatIds) || seatIds.length === 0 || !userId) {
       return res.status(400).json({ message: 'Invalid request' });
     }

@@ -8,7 +8,14 @@ const formatTime = (ms) => {
   return `${minutes}:${seconds}`;
 };
 
-const CartPanel = ({ selectedSeats, onRemoveSeat, onClear, onCheckout, timeLeft }) => {
+const CartPanel = ({
+  selectedSeats,
+  onRemoveSeat,
+  onClear,
+  onCheckout,
+  timeLeft,
+  canCheckout,
+}) => {
   return (
     <div className="glass-panel rounded-3xl p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -55,7 +62,7 @@ const CartPanel = ({ selectedSeats, onRemoveSeat, onClear, onCheckout, timeLeft 
           className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 text-sm font-semibold transition"
         >
           <CreditCard size={16} />
-          Checkout
+          {canCheckout ? 'Checkout' : 'Login to checkout'}
         </button>
         <button
           type="button"
@@ -65,6 +72,11 @@ const CartPanel = ({ selectedSeats, onRemoveSeat, onClear, onCheckout, timeLeft 
         >
           Clear all
         </button>
+        {!canCheckout && (
+          <p className="text-xs text-white/60">
+            Sign in or create an account to complete checkout.
+          </p>
+        )}
       </div>
     </div>
   );

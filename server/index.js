@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 
 import eventRoutes from './routes/events.js';
 import adminRoutes from './routes/admin.js';
+import authRoutes from './routes/auth.js';
 import checkoutRoutes from './routes/checkout.js';
 import { handleSocket } from './utils/socket.js';
 import { releaseExpiredLocks } from './utils/lockCleanup.js';
@@ -27,6 +28,7 @@ app.use(express.json());
 app.set('io', io);
 
 app.use('/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/checkout', checkoutRoutes);
 

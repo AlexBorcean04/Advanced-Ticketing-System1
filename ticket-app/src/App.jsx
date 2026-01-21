@@ -5,6 +5,8 @@ import AdminDashboard from './pages/AdminDashboard.jsx';
 import AdminLogin from './pages/AdminLogin.jsx';
 import SeatMapPage from './pages/SeatMapPage.jsx';
 import RequireAdmin from './components/RequireAdmin.jsx';
+import UserLogin from './pages/UserLogin.jsx';
+import UserRegister from './pages/UserRegister.jsx';
 
 const App = () => {
   return (
@@ -13,6 +15,8 @@ const App = () => {
       <Routes>
         <Route path="/" element={<EventList />} />
         <Route path="/events/:id" element={<SeatMapPage />} />
+        <Route path="/login" element={<UserLogin />} />
+        <Route path="/register" element={<UserRegister />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route
           path="/admin"
