@@ -135,8 +135,11 @@ const SeatMapPage = () => {
     socket.on('seat_booked', handleSeatBooked);
     const handleConnect = () => setSocketConnected(true);
     const handleDisconnect = () => setSocketConnected(false);
+    const handleConnectError = () => setSocketConnected(false);
     socket.on('connect', handleConnect);
     socket.on('disconnect', handleDisconnect);
+    socket.on('connect_error', handleConnectError);
+    setSocketConnected(socket.connected);
 
     return () => {
       socket.off('seat_locked', handleSeatLocked);
@@ -144,6 +147,7 @@ const SeatMapPage = () => {
       socket.off('seat_booked', handleSeatBooked);
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
+      socket.off('connect_error', handleConnectError);
       disconnectSocket();
     };
   }, [socket, id, userId, setSelectedSeats, setHoldExpiresAt, holdExpiresAt]);
