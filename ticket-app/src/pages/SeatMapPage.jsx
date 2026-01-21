@@ -205,10 +205,6 @@ const SeatMapPage = () => {
 
   const handleSeatClick = (seat) => {
     if (!event) return;
-    if (!canCheckout) {
-      navigate('/login');
-      return;
-    }
     if (seat.status === 'booked') return;
 
     const isLockedByUser = seat.status === 'locked' && seat.lockedBy === userId;
