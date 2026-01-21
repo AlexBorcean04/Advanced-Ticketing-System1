@@ -27,6 +27,8 @@ const getSeatHolderId = () => {
   return getUserId();
 };
 
+const HOLD_DURATION_MS = 5 * 60 * 1000;
+
 const normalizeSeats = (seats) => {
   const now = Date.now();
   return seats.map((seat) => {
@@ -209,11 +211,38 @@ const SeatMapPage = () => {
 
     const isLockedByUser = seat.status === 'locked' && seat.lockedBy === userId;
     if (isLockedByUser) {
+      setEvent((prev) => {
+        if (!prev) return prev;
+        const updatedSeats = prev.seats.map((item) =>
+          item.id === seat.id
+            ? { ...item, status: 'available', lockedBy: null, lockedUntil: null }
+            : item
+        );
+        return { ...prev, seats: updatedSeats };
+      });
+      setSelectedSeats((prev) => prev.filter((seatId) => seatId !== seat.id));
       socket.emit('unselect_seat', { eventId: id, seatId: seat.id, userId });
       return;
     }
     if (seat.status === 'locked' && seat.lockedBy !== userId) {
       return;
+    }
+    const lockedUntil = new Date(Date.now() + HOLD_DURATION_MS).toISOString();
+    setEvent((prev) => {
+      if (!prev) return prev;
+      const updatedSeats = prev.seats.map((item) =>
+        item.id === seat.id
+          ? { ...item, status: 'locked', lockedBy: userId, lockedUntil }
+          : item
+      );
+      return { ...prev, seats: updatedSeats };
+    });
+    setSelectedSeats((prev) => {
+      if (prev.includes(seat.id)) return prev;
+      return [...prev, seat.id];
+    });
+    if (!holdExpiresAt) {
+      setHoldExpiresAt(new Date(lockedUntil).getTime());
     }
     socket.emit('select_seat', { eventId: id, seatId: seat.id, userId });
   };
