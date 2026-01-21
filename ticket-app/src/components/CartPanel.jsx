@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Trash2, CreditCard } from 'lucide-react';
 
 const formatTime = (ms) => {
@@ -58,11 +59,11 @@ const CartPanel = ({
         <button
           type="button"
           onClick={onCheckout}
-          disabled={selectedSeats.length === 0}
+          disabled={selectedSeats.length === 0 || !canCheckout}
           className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 text-sm font-semibold transition"
         >
           <CreditCard size={16} />
-          {canCheckout ? 'Checkout' : 'Login to checkout'}
+          Checkout
         </button>
         <button
           type="button"
@@ -74,7 +75,11 @@ const CartPanel = ({
         </button>
         {!canCheckout && (
           <p className="text-xs text-white/60">
-            Sign in or create an account to complete checkout.
+            Sign in or create an account to complete checkout.{' '}
+            <Link className="text-accent-500 hover:text-accent-400" to="/login">
+              Log in
+            </Link>
+            .
           </p>
         )}
       </div>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import api from '../lib/api.js';
 import SeatMap from '../components/SeatMap.jsx';
 import CartPanel from '../components/CartPanel.jsx';
@@ -41,7 +41,6 @@ const normalizeSeats = (seats) => {
 
 const SeatMapPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [status, setStatus] = useState('loading');
   const [timeLeft, setTimeLeft] = useState(0);
@@ -259,10 +258,7 @@ const SeatMapPage = () => {
   };
 
   const handleCheckout = async () => {
-    if (!canCheckout) {
-      navigate('/login');
-      return;
-    }
+    if (!canCheckout) return;
     if (derivedSelectedSeats.length === 0) return;
     try {
       await api.post('/checkout', { eventId: id, seatIds: derivedSelectedSeats });
