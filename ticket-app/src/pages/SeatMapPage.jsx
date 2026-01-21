@@ -47,6 +47,7 @@ const SeatMapPage = () => {
   const userId = useMemo(() => getSeatHolderId(), []);
   const socket = useMemo(() => getSocket(), []);
   const [socketConnected, setSocketConnected] = useState(socket?.connected ?? false);
+  const [socketError, setSocketError] = useState('');
   const canCheckout = isUserAuthed();
 
   const { selectedSeats, setSelectedSeats, holdExpiresAt, setHoldExpiresAt, clearHold } =
@@ -133,9 +134,17 @@ const SeatMapPage = () => {
     socket.on('seat_locked', handleSeatLocked);
     socket.on('seat_unlocked', handleSeatUnlocked);
     socket.on('seat_booked', handleSeatBooked);
-    const handleConnect = () => setSocketConnected(true);
+    const handleConnect = () => {
+      setSocketConnected(true);
+      setSocketError('');
+    };
     const handleDisconnect = () => setSocketConnected(false);
-    const handleConnectError = () => setSocketConnected(false);
+    const handleConnectError = (error) => {
+      setSocketConnected(false);
+      if (error?.message) {
+        setSocketError(error.message);
+      }
+    };
     socket.on('connect', handleConnect);
     socket.on('disconnect', handleDisconnect);
     socket.on('connect_error', handleConnectError);
@@ -314,6 +323,11 @@ const SeatMapPage = () => {
           />
           {socketConnected ? 'Live seat sync' : 'Seat sync reconnecting...'}
         </div>
+        {!socketConnected && socketError && (
+          <p className="text-xs text-amber-200 mt-2">
+            Socket error: {socketError}
+          </p>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
