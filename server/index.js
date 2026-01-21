@@ -40,6 +40,10 @@ io.on('connection', (socket) => {
 
 const startServer = async () => {
   try {
+    if (!process.env.MONGO_URI) {
+      console.error('Missing MONGO_URI environment variable. Check server/.env.');
+      process.exit(1);
+    }
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB connected');
     const port = process.env.PORT || 5000;
