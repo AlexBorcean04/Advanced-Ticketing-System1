@@ -14,7 +14,7 @@ Copy `server/.env.example` to `server/.env` and set real values:
 MONGO_URI=mongodb://localhost:27017/ticketing
 PORT=5000
 HOST=0.0.0.0
-CLIENT_ORIGIN=http://localhost:5173
+CLIENT_ORIGIN=http://localhost:5173,http://172.19.206.236:5173
 ADMIN_PASSWORD=changeme
 ADMIN_JWT_SECRET=supersecret
 USER_JWT_SECRET=supersecret

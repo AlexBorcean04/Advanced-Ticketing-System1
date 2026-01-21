@@ -16,14 +16,18 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: process.env.CLIENT_ORIGIN,
-    methods: ['GET', 'POST', 'DELETE'],
-  },
-});
+const allowedOrigins = process.env.CLIENT_ORIGIN
+  ? process.env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim())
+  : '*';
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN }));
+const corsOptions = {
+  origin: allowedOrigins,
+  methods: ['GET', 'POST', 'DELETE'],
+};
+
+const io = new Server(server, { cors: corsOptions });
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.set('io', io);
 
