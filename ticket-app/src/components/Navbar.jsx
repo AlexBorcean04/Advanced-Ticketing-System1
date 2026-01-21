@@ -13,6 +13,7 @@ const Navbar = () => {
   );
   const linkRefs = useRef({});
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
+  const [activeStyle, setActiveStyle] = useState({ width: 0, left: 0 });
 
   useEffect(() => {
     const activeItem = navItems.find((item) =>
@@ -24,9 +25,22 @@ const Navbar = () => {
     const node = linkRefs.current[activeItem.path];
     if (node) {
       const { offsetLeft, offsetWidth } = node;
-      setIndicatorStyle({ left: offsetLeft, width: offsetWidth });
+      const nextStyle = { left: offsetLeft, width: offsetWidth };
+      setIndicatorStyle(nextStyle);
+      setActiveStyle(nextStyle);
     }
   }, [location.pathname, navItems]);
+
+  const handleHover = (path) => {
+    const node = linkRefs.current[path];
+    if (!node) return;
+    const { offsetLeft, offsetWidth } = node;
+    setIndicatorStyle({ left: offsetLeft, width: offsetWidth });
+  };
+
+  const handleHoverEnd = () => {
+    setIndicatorStyle(activeStyle);
+  };
 
   return (
     <nav className="sticky top-0 z-40 backdrop-blur-xl bg-night-900/70 border-b border-white/10">
@@ -42,7 +56,10 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="relative flex items-center gap-2 bg-white/5 border border-white/10 rounded-full p-1">
+          <div
+            className="relative flex items-center gap-2 bg-white/5 border border-white/10 rounded-full p-1"
+            onMouseLeave={handleHoverEnd}
+          >
             <span
               className="absolute top-1 bottom-1 rounded-full bg-accent-500/20 border border-accent-500/40 transition-all duration-300"
               style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
@@ -56,6 +73,9 @@ const Navbar = () => {
                   ref={(node) => {
                     if (node) linkRefs.current[item.path] = node;
                   }}
+                  onMouseEnter={() => handleHover(item.path)}
+                  onFocus={() => handleHover(item.path)}
+                  onBlur={handleHoverEnd}
                   className={({ isActive }) =>
                     `relative z-10 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                       isActive || location.pathname.startsWith(item.path)
