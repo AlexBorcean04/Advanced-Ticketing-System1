@@ -49,8 +49,9 @@ const startServer = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB connected');
     const port = process.env.PORT || 5000;
-    server.listen(port, () => {
-      console.log(`Server running on port ${port}`);
+    const host = process.env.HOST || '0.0.0.0';
+    server.listen(port, host, () => {
+      console.log(`Server running on http://${host}:${port}`);
     });
     setInterval(() => releaseExpiredLocks(io), 30000);
   } catch (error) {
