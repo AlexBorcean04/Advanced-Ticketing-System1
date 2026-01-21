@@ -54,6 +54,21 @@ npm run dev
 
 ## Troubleshooting
 
+### MongooseServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017
+
+MongoDB is not running or is not reachable at the host/port in `MONGO_URI`.
+
+**Fix**
+
+- Start MongoDB locally (or point `MONGO_URI` to a running MongoDB instance/Atlas).
+- If you are using Docker, run:
+
+```
+docker run --name ticketing-mongo -p 27017:27017 -d mongo
+```
+
+Then retry `npm run start` in `server`.
+
 ### MongooseError: uri must be a string
 
 This happens when `MONGO_URI` is missing. Ensure `server/.env` exists and includes a valid `MONGO_URI`.
