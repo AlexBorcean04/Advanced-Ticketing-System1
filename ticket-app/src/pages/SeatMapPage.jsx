@@ -38,6 +38,14 @@ const SeatMapPage = () => {
   const { selectedSeats, setSelectedSeats, holdExpiresAt, setHoldExpiresAt, clearHold } =
     useSeatStore();
 
+  const derivedSelectedSeats = useMemo(() => {
+    if (!event) return selectedSeats;
+    const lockedByUser = event.seats
+      .filter((seat) => seat.status === 'locked' && seat.lockedBy === userId)
+      .map((seat) => seat.id);
+    return lockedByUser.length > 0 ? lockedByUser : selectedSeats;
+  }, [event, selectedSeats, userId]);
+
   useEffect(() => {
     const fetchEvent = async () => {
       try {
@@ -121,6 +129,29 @@ const SeatMapPage = () => {
   }, [socket, id, userId, setSelectedSeats, setHoldExpiresAt, holdExpiresAt]);
 
   useEffect(() => {
+    if (!event) return;
+    const lockedByUser = event.seats
+      .filter((seat) => seat.status === 'locked' && seat.lockedBy === userId)
+      .map((seat) => seat.id);
+    const derivedSet = new Set(lockedByUser);
+    const setsMatch =
+      selectedSeats.length === lockedByUser.length &&
+      selectedSeats.every((seatId) => derivedSet.has(seatId));
+    if (!setsMatch) {
+      setSelectedSeats(lockedByUser);
+    }
+    if (!holdExpiresAt && lockedByUser.length > 0) {
+      const latestLock = event.seats
+        .filter((seat) => lockedByUser.includes(seat.id) && seat.lockedUntil)
+        .map((seat) => new Date(seat.lockedUntil).getTime())
+        .reduce((max, value) => Math.max(max, value), 0);
+      if (latestLock) {
+        setHoldExpiresAt(latestLock);
+      }
+    }
+  }, [event, userId, selectedSeats, setSelectedSeats, holdExpiresAt, setHoldExpiresAt]);
+
+  useEffect(() => {
     if (!holdExpiresAt) {
       setTimeLeft(0);
       return undefined;
@@ -137,28 +168,28 @@ const SeatMapPage = () => {
   }, [holdExpiresAt]);
 
   useEffect(() => {
-    if (timeLeft <= 0 && selectedSeats.length > 0) {
-      socket.emit('release_seats', { eventId: id, seatIds: selectedSeats, userId });
+    if (timeLeft <= 0 && derivedSelectedSeats.length > 0) {
+      socket.emit('release_seats', { eventId: id, seatIds: derivedSelectedSeats, userId });
       setSelectedSeats([]);
       clearHold();
     }
-  }, [timeLeft, selectedSeats, socket, id, userId, clearHold, setSelectedSeats]);
+  }, [timeLeft, derivedSelectedSeats, socket, id, userId, clearHold, setSelectedSeats]);
 
   useEffect(() => {
     const handleUnload = () => {
-      if (selectedSeats.length > 0) {
-        socket.emit('release_seats', { eventId: id, seatIds: selectedSeats, userId });
+      if (derivedSelectedSeats.length > 0) {
+        socket.emit('release_seats', { eventId: id, seatIds: derivedSelectedSeats, userId });
       }
     };
     window.addEventListener('beforeunload', handleUnload);
     return () => window.removeEventListener('beforeunload', handleUnload);
-  }, [selectedSeats, socket, id, userId]);
+  }, [derivedSelectedSeats, socket, id, userId]);
 
   useEffect(() => {
-    if (selectedSeats.length === 0) {
+    if (derivedSelectedSeats.length === 0) {
       clearHold();
     }
-  }, [selectedSeats, clearHold]);
+  }, [derivedSelectedSeats, clearHold]);
 
   const handleSeatClick = (seat) => {
     if (!event) return;
@@ -180,16 +211,16 @@ const SeatMapPage = () => {
   };
 
   const handleClear = () => {
-    if (selectedSeats.length === 0) return;
-    socket.emit('release_seats', { eventId: id, seatIds: selectedSeats, userId });
+    if (derivedSelectedSeats.length === 0) return;
+    socket.emit('release_seats', { eventId: id, seatIds: derivedSelectedSeats, userId });
     setSelectedSeats([]);
     clearHold();
   };
 
   const handleCheckout = async () => {
-    if (selectedSeats.length === 0) return;
+    if (derivedSelectedSeats.length === 0) return;
     try {
-      await api.post('/checkout', { eventId: id, seatIds: selectedSeats, userId });
+      await api.post('/checkout', { eventId: id, seatIds: derivedSelectedSeats, userId });
       setSelectedSeats([]);
       clearHold();
     } catch (error) {
@@ -228,7 +259,7 @@ const SeatMapPage = () => {
 
         <div className="hidden md:block md:sticky md:top-28">
           <CartPanel
-            selectedSeats={selectedSeats}
+            selectedSeats={derivedSelectedSeats}
             onRemoveSeat={handleRemoveSeat}
             onClear={handleClear}
             onCheckout={handleCheckout}
@@ -239,7 +270,7 @@ const SeatMapPage = () => {
 
       <div className="md:hidden fixed bottom-4 left-4 right-4">
         <CartPanel
-          selectedSeats={selectedSeats}
+          selectedSeats={derivedSelectedSeats}
           onRemoveSeat={handleRemoveSeat}
           onClear={handleClear}
           onCheckout={handleCheckout}
