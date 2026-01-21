@@ -46,6 +46,7 @@ const SeatMapPage = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const userId = useMemo(() => getSeatHolderId(), []);
   const socket = useMemo(() => getSocket(), []);
+  const [socketConnected, setSocketConnected] = useState(socket?.connected ?? false);
   const canCheckout = isUserAuthed();
 
   const { selectedSeats, setSelectedSeats, holdExpiresAt, setHoldExpiresAt, clearHold } =
@@ -132,11 +133,17 @@ const SeatMapPage = () => {
     socket.on('seat_locked', handleSeatLocked);
     socket.on('seat_unlocked', handleSeatUnlocked);
     socket.on('seat_booked', handleSeatBooked);
+    const handleConnect = () => setSocketConnected(true);
+    const handleDisconnect = () => setSocketConnected(false);
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
 
     return () => {
       socket.off('seat_locked', handleSeatLocked);
       socket.off('seat_unlocked', handleSeatUnlocked);
       socket.off('seat_booked', handleSeatBooked);
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
       disconnectSocket();
     };
   }, [socket, id, userId, setSelectedSeats, setHoldExpiresAt, holdExpiresAt]);
@@ -289,10 +296,20 @@ const SeatMapPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12 pb-36 md:pb-12">
-      <div className="mb-6">
-        <p className="text-xs uppercase tracking-[0.3em] text-accent-500/80">Seat Map</p>
-        <h1 className="text-3xl font-semibold mt-2">{event.title}</h1>
-        <p className="text-white/60">{new Date(event.date).toLocaleString()}</p>
+      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.3em] text-accent-500/80">Seat Map</p>
+          <h1 className="text-3xl font-semibold mt-2">{event.title}</h1>
+          <p className="text-white/60">{new Date(event.date).toLocaleString()}</p>
+        </div>
+        <div className="inline-flex items-center gap-2 text-xs text-white/60 bg-white/5 border border-white/10 rounded-full px-3 py-1">
+          <span
+            className={`h-2 w-2 rounded-full ${
+              socketConnected ? 'bg-emerald-400' : 'bg-amber-400'
+            }`}
+          />
+          {socketConnected ? 'Live seat sync' : 'Seat sync reconnecting...'}
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-8 items-start">

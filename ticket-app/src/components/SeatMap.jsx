@@ -68,7 +68,7 @@ const SeatMap = ({ seats, onSeatClick, userId }) => {
                         cx={seat.x}
                         cy={seat.y}
                         r="13"
-                        className={`transition ${seatStyles[styleKey]}`}
+                        className={`transition cursor-pointer ${seatStyles[styleKey]}`}
                         onClick={() => onSeatClick(seat)}
                         role="button"
                         tabIndex={0}
