@@ -55,11 +55,10 @@ const SeatMapPage = () => {
 
   const derivedSelectedSeats = useMemo(() => {
     if (!event) return selectedSeats;
-    const lockedByUser = event.seats
+    return event.seats
       .filter((seat) => seat.status === 'locked' && seat.lockedBy === userId)
       .map((seat) => seat.id);
-    return lockedByUser.length > 0 ? lockedByUser : selectedSeats;
-  }, [event, selectedSeats, userId]);
+  }, [event, userId]);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -163,26 +162,17 @@ const SeatMapPage = () => {
 
   useEffect(() => {
     if (!event) return;
-    const lockedByUser = event.seats
-      .filter((seat) => seat.status === 'locked' && seat.lockedBy === userId)
-      .map((seat) => seat.id);
-    const derivedSet = new Set(lockedByUser);
-    const setsMatch =
-      selectedSeats.length === lockedByUser.length &&
-      selectedSeats.every((seatId) => derivedSet.has(seatId));
-    if (!setsMatch) {
-      setSelectedSeats(lockedByUser);
-    }
-    if (!holdExpiresAt && lockedByUser.length > 0) {
+    setSelectedSeats(derivedSelectedSeats);
+    if (!holdExpiresAt && derivedSelectedSeats.length > 0) {
       const latestLock = event.seats
-        .filter((seat) => lockedByUser.includes(seat.id) && seat.lockedUntil)
+        .filter((seat) => derivedSelectedSeats.includes(seat.id) && seat.lockedUntil)
         .map((seat) => new Date(seat.lockedUntil).getTime())
         .reduce((max, value) => Math.max(max, value), 0);
       if (latestLock) {
         setHoldExpiresAt(latestLock);
       }
     }
-  }, [event, userId, selectedSeats, setSelectedSeats, holdExpiresAt, setHoldExpiresAt]);
+  }, [event, derivedSelectedSeats, holdExpiresAt, setHoldExpiresAt, setSelectedSeats]);
 
   useEffect(() => {
     if (!holdExpiresAt) {
