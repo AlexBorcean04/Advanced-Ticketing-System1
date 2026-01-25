@@ -16,6 +16,8 @@ const CartPanel = ({
   onCheckout,
   timeLeft,
   canCheckout,
+  checkoutStatus,
+  checkoutMessage,
 }) => {
   return (
     <div className="glass-panel rounded-3xl p-6 flex flex-col gap-4">
@@ -59,11 +61,11 @@ const CartPanel = ({
         <button
           type="button"
           onClick={onCheckout}
-          disabled={selectedSeats.length === 0 || !canCheckout}
+          disabled={selectedSeats.length === 0 || !canCheckout || checkoutStatus === 'loading'}
           className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 text-sm font-semibold transition"
         >
           <CreditCard size={16} />
-          Checkout
+          {checkoutStatus === 'loading' ? 'Processing...' : 'Checkout'}
         </button>
         <button
           type="button"
@@ -80,6 +82,17 @@ const CartPanel = ({
               Log in
             </Link>
             .
+          </p>
+        )}
+        {checkoutMessage && (
+          <p
+            className={`text-xs ${
+              checkoutStatus === 'success' ? 'text-emerald-300' : 'text-red-300'
+            }`}
+            role="status"
+            aria-live="polite"
+          >
+            {checkoutMessage}
           </p>
         )}
       </div>

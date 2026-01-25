@@ -44,6 +44,8 @@ const SeatMapPage = () => {
   const [event, setEvent] = useState(null);
   const [status, setStatus] = useState('loading');
   const [timeLeft, setTimeLeft] = useState(0);
+  const [checkoutStatus, setCheckoutStatus] = useState('idle');
+  const [checkoutMessage, setCheckoutMessage] = useState('');
   const userId = useMemo(() => getSeatHolderId(), []);
   const socket = useMemo(() => getSocket(), []);
   const [socketConnected, setSocketConnected] = useState(socket?.connected ?? false);
@@ -265,17 +267,31 @@ const SeatMapPage = () => {
     socket.emit('release_seats', { eventId: id, seatIds: derivedSelectedSeats, userId });
     setSelectedSeats([]);
     clearHold();
+    setCheckoutStatus('idle');
+    setCheckoutMessage('');
   };
 
   const handleCheckout = async () => {
     if (!canCheckout) return;
     if (derivedSelectedSeats.length === 0) return;
     try {
+      setCheckoutStatus('loading');
+      setCheckoutMessage('');
       await api.post('/checkout', { eventId: id, seatIds: derivedSelectedSeats });
       setSelectedSeats([]);
       clearHold();
+      setCheckoutStatus('success');
+      setCheckoutMessage('Seats booked successfully.');
     } catch (error) {
-      // no-op
+      const status = error?.response?.status;
+      if (status === 401) {
+        setCheckoutMessage('Please log in to complete checkout.');
+      } else if (status === 409) {
+        setCheckoutMessage('Seats are no longer locked for you. Please reselect.');
+      } else {
+        setCheckoutMessage('Checkout failed. Please try again.');
+      }
+      setCheckoutStatus('error');
     }
   };
 
@@ -331,6 +347,8 @@ const SeatMapPage = () => {
             onCheckout={handleCheckout}
             timeLeft={timeLeft}
             canCheckout={canCheckout}
+            checkoutStatus={checkoutStatus}
+            checkoutMessage={checkoutMessage}
           />
         </div>
       </div>
@@ -343,6 +361,8 @@ const SeatMapPage = () => {
           onCheckout={handleCheckout}
           timeLeft={timeLeft}
           canCheckout={canCheckout}
+          checkoutStatus={checkoutStatus}
+          checkoutMessage={checkoutMessage}
         />
       </div>
     </div>
