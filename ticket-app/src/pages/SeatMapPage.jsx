@@ -166,8 +166,14 @@ const SeatMapPage = () => {
 
   useEffect(() => {
     if (!event || derivedSelectedSeats.length === 0) return;
+    const now = Date.now();
     const latestLock = event.seats
-      .filter((seat) => derivedSelectedSeats.includes(seat.id) && seat.lockedUntil)
+      .filter(
+        (seat) =>
+          derivedSelectedSeats.includes(seat.id) &&
+          seat.lockedUntil &&
+          new Date(seat.lockedUntil).getTime() > now
+      )
       .map((seat) => new Date(seat.lockedUntil).getTime())
       .reduce((max, value) => Math.max(max, value), 0);
     if (!latestLock) return;
@@ -193,6 +199,15 @@ const SeatMapPage = () => {
   useEffect(() => {
     if (!holdExpiresAt) return;
     if (timeLeft <= 0 && derivedSelectedSeats.length > 0) {
+      setEvent((prev) => {
+        if (!prev) return prev;
+        const updatedSeats = prev.seats.map((seat) =>
+          derivedSelectedSeats.includes(seat.id)
+            ? { ...seat, status: 'available', lockedBy: null, lockedUntil: null }
+            : seat
+        );
+        return { ...prev, seats: updatedSeats };
+      });
       socket.emit('release_seats', { eventId: id, seatIds: derivedSelectedSeats, userId });
       setSelectedSeats([]);
       clearHold();
