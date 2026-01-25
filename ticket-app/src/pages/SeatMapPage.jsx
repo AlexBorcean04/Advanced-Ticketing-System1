@@ -4,7 +4,7 @@ import api from '../lib/api.js';
 import SeatMap from '../components/SeatMap.jsx';
 import CartPanel from '../components/CartPanel.jsx';
 import useSeatStore from '../store/seatStore.js';
-import { getSocket, disconnectSocket } from '../lib/socket.js';
+import { getSocket } from '../lib/socket.js';
 import { getUserProfile, isUserAuthed } from '../lib/userAuth.js';
 
 const getUserId = () => {
@@ -79,6 +79,9 @@ const SeatMapPage = () => {
 
   useEffect(() => {
     if (!socket) return undefined;
+    if (!socket.connected) {
+      socket.connect();
+    }
 
     const handleSeatLocked = ({ eventId, seatId, userId: lockerId, lockedUntil }) => {
       if (eventId !== id) return;
@@ -156,7 +159,6 @@ const SeatMapPage = () => {
       socket.off('connect', handleConnect);
       socket.off('disconnect', handleDisconnect);
       socket.off('connect_error', handleConnectError);
-      disconnectSocket();
     };
   }, [socket, id, userId, setSelectedSeats, setHoldExpiresAt]);
 
