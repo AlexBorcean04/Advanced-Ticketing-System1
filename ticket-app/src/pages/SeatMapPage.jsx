@@ -56,11 +56,12 @@ const SeatMapPage = () => {
     useSeatStore();
 
   const derivedSelectedSeats = useMemo(() => {
-    if (!event) return selectedSeats;
+    if (selectedSeats.length > 0) return selectedSeats;
+    if (!event) return [];
     return event.seats
       .filter((seat) => seat.status === 'locked' && seat.lockedBy === userId)
       .map((seat) => seat.id);
-  }, [event, userId]);
+  }, [event, selectedSeats, userId]);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -164,7 +165,6 @@ const SeatMapPage = () => {
 
   useEffect(() => {
     if (!event) return;
-    setSelectedSeats(derivedSelectedSeats);
     if (!holdExpiresAt && derivedSelectedSeats.length > 0) {
       const latestLock = event.seats
         .filter((seat) => derivedSelectedSeats.includes(seat.id) && seat.lockedUntil)
@@ -174,7 +174,7 @@ const SeatMapPage = () => {
         setHoldExpiresAt(latestLock);
       }
     }
-  }, [event, derivedSelectedSeats, holdExpiresAt, setHoldExpiresAt, setSelectedSeats]);
+  }, [event, derivedSelectedSeats, holdExpiresAt, setHoldExpiresAt]);
 
   useEffect(() => {
     if (!holdExpiresAt) {
@@ -259,11 +259,13 @@ const SeatMapPage = () => {
   };
 
   const handleRemoveSeat = (seatId) => {
+    setSelectedSeats((prev) => prev.filter((seat) => seat !== seatId));
     socket.emit('unselect_seat', { eventId: id, seatId, userId });
   };
 
   const handleClear = () => {
     if (derivedSelectedSeats.length === 0) return;
+    setSelectedSeats([]);
     socket.emit('release_seats', { eventId: id, seatIds: derivedSelectedSeats, userId });
     setSelectedSeats([]);
     clearHold();
