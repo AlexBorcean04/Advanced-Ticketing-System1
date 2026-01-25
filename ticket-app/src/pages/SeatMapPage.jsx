@@ -165,17 +165,14 @@ const SeatMapPage = () => {
   }, [socket, id, userId, setSelectedSeats, setHoldExpiresAt]);
 
   useEffect(() => {
-    if (!event) return;
-    if (!holdExpiresAt && derivedSelectedSeats.length > 0) {
-      const latestLock = event.seats
-        .filter((seat) => derivedSelectedSeats.includes(seat.id) && seat.lockedUntil)
-        .map((seat) => new Date(seat.lockedUntil).getTime())
-        .reduce((max, value) => Math.max(max, value), 0);
-      if (latestLock) {
-        setHoldExpiresAt(latestLock);
-      }
-    }
-  }, [event, derivedSelectedSeats, holdExpiresAt, setHoldExpiresAt]);
+    if (!event || derivedSelectedSeats.length === 0) return;
+    const latestLock = event.seats
+      .filter((seat) => derivedSelectedSeats.includes(seat.id) && seat.lockedUntil)
+      .map((seat) => new Date(seat.lockedUntil).getTime())
+      .reduce((max, value) => Math.max(max, value), 0);
+    if (!latestLock) return;
+    setHoldExpiresAt((prev) => (prev && prev >= latestLock ? prev : latestLock));
+  }, [event, derivedSelectedSeats, setHoldExpiresAt]);
 
   useEffect(() => {
     if (!holdExpiresAt) {
