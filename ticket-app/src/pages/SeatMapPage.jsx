@@ -274,6 +274,11 @@ const SeatMapPage = () => {
   const handleCheckout = async () => {
     if (!canCheckout) return;
     if (derivedSelectedSeats.length === 0) return;
+    if (!socketConnected) {
+      setCheckoutStatus('error');
+      setCheckoutMessage('Seat sync is offline. Reconnect and reselect seats.');
+      return;
+    }
     try {
       setCheckoutStatus('loading');
       setCheckoutMessage('');
@@ -347,6 +352,7 @@ const SeatMapPage = () => {
             onCheckout={handleCheckout}
             timeLeft={timeLeft}
             canCheckout={canCheckout}
+            syncConnected={socketConnected}
             checkoutStatus={checkoutStatus}
             checkoutMessage={checkoutMessage}
           />
@@ -361,6 +367,7 @@ const SeatMapPage = () => {
           onCheckout={handleCheckout}
           timeLeft={timeLeft}
           canCheckout={canCheckout}
+          syncConnected={socketConnected}
           checkoutStatus={checkoutStatus}
           checkoutMessage={checkoutMessage}
         />

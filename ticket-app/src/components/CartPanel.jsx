@@ -16,6 +16,7 @@ const CartPanel = ({
   onCheckout,
   timeLeft,
   canCheckout,
+  syncConnected,
   checkoutStatus,
   checkoutMessage,
 }) => {
@@ -61,7 +62,12 @@ const CartPanel = ({
         <button
           type="button"
           onClick={onCheckout}
-          disabled={selectedSeats.length === 0 || !canCheckout || checkoutStatus === 'loading'}
+          disabled={
+            selectedSeats.length === 0 ||
+            !canCheckout ||
+            !syncConnected ||
+            checkoutStatus === 'loading'
+          }
           className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 text-sm font-semibold transition"
         >
           <CreditCard size={16} />
@@ -82,6 +88,11 @@ const CartPanel = ({
               Log in
             </Link>
             .
+          </p>
+        )}
+        {!syncConnected && (
+          <p className="text-xs text-amber-200">
+            Seat sync is offline. Wait for reconnect before checkout.
           </p>
         )}
         {checkoutMessage && (
