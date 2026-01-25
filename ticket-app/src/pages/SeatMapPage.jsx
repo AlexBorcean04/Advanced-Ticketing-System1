@@ -219,10 +219,10 @@ const SeatMapPage = () => {
   }, [derivedSelectedSeats, socket, id, userId]);
 
   useEffect(() => {
-    if (derivedSelectedSeats.length === 0) {
+    if (derivedSelectedSeats.length === 0 && holdExpiresAt) {
       clearHold();
     }
-  }, [derivedSelectedSeats, clearHold]);
+  }, [derivedSelectedSeats, holdExpiresAt, clearHold]);
 
   const handleSeatClick = (seat) => {
     if (!event) return;

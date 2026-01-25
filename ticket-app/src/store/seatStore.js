@@ -11,7 +11,8 @@ const useSeatStore = create((set) => ({
           : selectedSeats,
     })),
   setHoldExpiresAt: (holdExpiresAt) => set({ holdExpiresAt }),
-  clearHold: () => set({ holdExpiresAt: null }),
+  clearHold: () =>
+    set((state) => (state.holdExpiresAt === null ? state : { holdExpiresAt: null })),
 }));
 
 export default useSeatStore;
