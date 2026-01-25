@@ -194,12 +194,22 @@ const SeatMapPage = () => {
   }, [holdExpiresAt]);
 
   useEffect(() => {
+    if (!holdExpiresAt) return;
     if (timeLeft <= 0 && derivedSelectedSeats.length > 0) {
       socket.emit('release_seats', { eventId: id, seatIds: derivedSelectedSeats, userId });
       setSelectedSeats([]);
       clearHold();
     }
-  }, [timeLeft, derivedSelectedSeats, socket, id, userId, clearHold, setSelectedSeats]);
+  }, [
+    timeLeft,
+    holdExpiresAt,
+    derivedSelectedSeats,
+    socket,
+    id,
+    userId,
+    clearHold,
+    setSelectedSeats,
+  ]);
 
   useEffect(() => {
     const handleUnload = () => {
@@ -268,7 +278,6 @@ const SeatMapPage = () => {
     if (derivedSelectedSeats.length === 0) return;
     setSelectedSeats([]);
     socket.emit('release_seats', { eventId: id, seatIds: derivedSelectedSeats, userId });
-    setSelectedSeats([]);
     clearHold();
     setCheckoutStatus('idle');
     setCheckoutMessage('');
