@@ -98,9 +98,7 @@ const SeatMapPage = () => {
           const next = [...prev, seatId];
           return next;
         });
-        if (!holdExpiresAt) {
-          setHoldExpiresAt(new Date(lockedUntil).getTime());
-        }
+        setHoldExpiresAt((prev) => prev ?? new Date(lockedUntil).getTime());
       }
     };
 
@@ -160,7 +158,7 @@ const SeatMapPage = () => {
       socket.off('connect_error', handleConnectError);
       disconnectSocket();
     };
-  }, [socket, id, userId, setSelectedSeats, setHoldExpiresAt, holdExpiresAt]);
+  }, [socket, id, userId, setSelectedSeats, setHoldExpiresAt]);
 
   useEffect(() => {
     if (!event) return;
