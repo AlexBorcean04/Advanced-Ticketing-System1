@@ -185,6 +185,8 @@ const SeatMapPage = () => {
       setTimeLeft(0);
       return undefined;
     }
+    const initialDiff = holdExpiresAt - Date.now();
+    setTimeLeft(initialDiff > 0 ? initialDiff : 0);
     const interval = setInterval(() => {
       const diff = holdExpiresAt - Date.now();
       if (diff <= 0) {
@@ -198,7 +200,8 @@ const SeatMapPage = () => {
 
   useEffect(() => {
     if (!holdExpiresAt) return;
-    if (timeLeft <= 0 && derivedSelectedSeats.length > 0) {
+    const diff = holdExpiresAt - Date.now();
+    if (diff <= 0 && derivedSelectedSeats.length > 0) {
       setEvent((prev) => {
         if (!prev) return prev;
         const updatedSeats = prev.seats.map((seat) =>
@@ -212,16 +215,7 @@ const SeatMapPage = () => {
       setSelectedSeats([]);
       clearHold();
     }
-  }, [
-    timeLeft,
-    holdExpiresAt,
-    derivedSelectedSeats,
-    socket,
-    id,
-    userId,
-    clearHold,
-    setSelectedSeats,
-  ]);
+  }, [holdExpiresAt, derivedSelectedSeats, socket, id, userId, clearHold, setSelectedSeats]);
 
   useEffect(() => {
     const handleUnload = () => {
