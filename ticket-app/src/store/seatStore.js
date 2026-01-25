@@ -10,7 +10,11 @@ const useSeatStore = create((set) => ({
           ? selectedSeats(state.selectedSeats)
           : selectedSeats,
     })),
-  setHoldExpiresAt: (holdExpiresAt) => set({ holdExpiresAt }),
+  setHoldExpiresAt: (holdExpiresAt) =>
+    set((state) => ({
+      holdExpiresAt:
+        typeof holdExpiresAt === 'function' ? holdExpiresAt(state.holdExpiresAt) : holdExpiresAt,
+    })),
   clearHold: () =>
     set((state) => (state.holdExpiresAt === null ? state : { holdExpiresAt: null })),
 }));
