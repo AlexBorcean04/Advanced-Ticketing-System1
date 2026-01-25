@@ -46,6 +46,7 @@ const SeatMapPage = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [checkoutStatus, setCheckoutStatus] = useState('idle');
   const [checkoutMessage, setCheckoutMessage] = useState('');
+  const [showCheckoutToast, setShowCheckoutToast] = useState(false);
   const userId = useMemo(() => getSeatHolderId(), []);
   const socket = useMemo(() => getSocket(), []);
   const [socketConnected, setSocketConnected] = useState(socket?.connected ?? false);
@@ -289,6 +290,7 @@ const SeatMapPage = () => {
       clearHold();
       setCheckoutStatus('success');
       setCheckoutMessage('Seats booked successfully.');
+      setShowCheckoutToast(true);
     } catch (error) {
       const status = error?.response?.status;
       if (status === 401) {
@@ -301,6 +303,14 @@ const SeatMapPage = () => {
       setCheckoutStatus('error');
     }
   };
+
+  useEffect(() => {
+    if (!showCheckoutToast) return undefined;
+    const timeout = setTimeout(() => {
+      setShowCheckoutToast(false);
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, [showCheckoutToast]);
 
   if (status === 'loading') {
     return (
@@ -322,6 +332,13 @@ const SeatMapPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12 pb-36 md:pb-12">
+      {showCheckoutToast && (
+        <div className="fixed top-24 right-6 z-50">
+          <div className="glass-panel rounded-2xl px-4 py-3 text-sm text-emerald-200 border border-emerald-400/30 shadow-lg">
+            Checkout complete! Seats booked.
+          </div>
+        </div>
+      )}
       <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-accent-500/80">Seat Map</p>
